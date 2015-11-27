@@ -32,7 +32,7 @@ func (c *Consumer) Consume() {
 		c.ErrLogger.Fatalf("Failed to register a consumer: %s", err)
 	}
 	c.InfLogger.Println("Succeeded registering consumer.")
-	c.InfLogger.Println("Consumer concurrency is .", c.Concurrency)
+	c.InfLogger.Println("Consumer concurrency is ", c.Concurrency)
 
 	defer c.Connection.Close()
 	defer c.Channel.Close()
