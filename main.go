@@ -20,12 +20,11 @@ func main() {
 	app.Usage = "Consume RabbitMQ easily to any cli program"
 	app.Author = "Richard van den Brand"
 	app.Email = "richard@vandenbrand.org"
-	app.Version = "1.1.0"
+	app.Version = "1.2.0"
 	app.Flags = []cli.Flag{
 		cli.IntFlag{
 			Name:  "concurrency, n",
 			Usage: "Number of Concurrency, default is 5",
-			Value: 5,
 		},
 		cli.StringFlag{
 			Name:  "executable, e",

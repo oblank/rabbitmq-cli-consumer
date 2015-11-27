@@ -83,25 +83,28 @@ Run without arguments or with <code>--help</code> switch to show the helptext:
     $ rabbitmq-cli-consumer
     NAME:
        rabbitmq-cli-consumer - Consume RabbitMQ easily to any cli program
-
+    
     USAGE:
        rabbitmq-cli-consumer [global options] command [command options] [arguments...]
-
+       
     VERSION:
-       0.0.1
-
-    AUTHOR:
-      Richard van den Brand - <richard@vandenbrand.org>
-
+       1.2.0
+       
+    AUTHOR(S):
+       Richard van den Brand <richard@vandenbrand.org> 
+       oBlank <dyh1919@gmail.com>
+       
     COMMANDS:
-       help, h	Shows a list of commands or help for one command
-
+       help, h      Shows a list of commands or help for one command
+       
     GLOBAL OPTIONS:
-       --executable, -e 	Location of executable
-       --configuration, -c 	Location of configuration file
-       --verbose, -V	Enable verbose mode (logs to stdout and stderr)
-       --help, -h		show help
-       --version, -v	print the version
+       --concurrency, -n "5"        Number of Concurrency, default is 5
+       --executable, -e             Location of executable
+       --configuration, -c          Location of configuration file
+       --verbose, -V                Enable verbose mode (logs to stdout and stderr)
+       --help, -h                   show help
+       --version, -v                print the version
+
 
 ## Configuration
 
@@ -120,6 +123,9 @@ compression=Off
 [logs]
 error = /location/to/error.log
 info = /location/to/info.log
+
+[concurrency]
+max = 5
 ```
 
 When you've created the configuration you can start the consumer like this:
@@ -129,6 +135,17 @@ When you've created the configuration you can start the consumer like this:
 Run without <code>-V</code> to get rid of the output:
 
     $ rabbitmq-cli-consumer -e "/path/to/your/app argument --flag" -c /path/to/your/configuration.conf
+    
+### Concurrency 
+
+With the flag <code>--concurrency 5</code> or <code>-n 5</code> you can reset concurrency number(default is 5)
+or add the following section to configuration:
+
+```ini
+[concurrency]
+max = 5
+```
+the concurrency value must >= 1, and concurrency number set by flag <code>-n</code> will be first use, or get from configuration file's <code>Concurrency</code> section.
 
 ### Prefetch count
 
