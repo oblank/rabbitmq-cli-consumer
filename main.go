@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/ricbra/rabbitmq-cli-consumer/command"
-	"github.com/ricbra/rabbitmq-cli-consumer/config"
-	"github.com/ricbra/rabbitmq-cli-consumer/consumer"
+	"github.com/oBlank/rabbitmq-cli-consumer/command"
+	"github.com/oBlank/rabbitmq-cli-consumer/config"
+	"github.com/oBlank/rabbitmq-cli-consumer/consumer"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 )
+
+var default_concurrency = 5
 
 func main() {
 	app := cli.NewApp()
@@ -20,6 +22,11 @@ func main() {
 	app.Email = "richard@vandenbrand.org"
 	app.Version = "1.1.0"
 	app.Flags = []cli.Flag{
+		cli.IntFlag{
+			Name:  "concurrency, n",
+			Usage: "Number of Concurrency, default is 5",
+			Value: 5,
+		},
 		cli.StringFlag{
 			Name:  "executable, e",
 			Usage: "Location of executable",
@@ -34,6 +41,8 @@ func main() {
 		},
 	}
 	app.Action = func(c *cli.Context) {
+		concurrency := c.Int("concurrency")
+
 		if c.String("configuration") == "" && c.String("executable") == "" {
 			cli.ShowAppHelp(c)
 			os.Exit(1)
@@ -43,6 +52,12 @@ func main() {
 
 		logger := log.New(os.Stderr, "", log.Ldate|log.Ltime)
 		cfg, err := config.LoadAndParse(c.String("configuration"))
+		if concurrency > 0 {
+			cfg.Concurrency.Max = concurrency
+		}
+		if cfg.Concurrency.Max <= 0 {
+			cfg.Concurrency.Max = default_concurrency
+		}
 
 		if err != nil {
 			logger.Fatalf("Failed parsing configuration: %s\n", err)

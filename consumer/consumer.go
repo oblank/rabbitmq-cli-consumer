@@ -6,8 +6,8 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/ricbra/rabbitmq-cli-consumer/command"
-	"github.com/ricbra/rabbitmq-cli-consumer/config"
+	"github.com/oBlank/rabbitmq-cli-consumer/command"
+	"github.com/oBlank/rabbitmq-cli-consumer/config"
 	"github.com/streadway/amqp"
 	"log"
 	"net/url"
@@ -22,6 +22,7 @@ type Consumer struct {
 	InfLogger   *log.Logger
 	Executer    *command.CommandExecuter
 	Compression bool
+	Concurrency int
 }
 
 func (c *Consumer) Consume() {
@@ -31,39 +32,50 @@ func (c *Consumer) Consume() {
 		c.ErrLogger.Fatalf("Failed to register a consumer: %s", err)
 	}
 	c.InfLogger.Println("Succeeded registering consumer.")
+	c.InfLogger.Println("Consumer concurrency is .", c.Concurrency)
 
 	defer c.Connection.Close()
 	defer c.Channel.Close()
 
 	forever := make(chan bool)
-
+	sem := make(chan bool, c.Concurrency)
 	go func() {
 		for d := range msgs {
-			input := d.Body
-			c.InfLogger.Println("Receive message:")
-			c.InfLogger.Println(string(input))
-			if c.Compression {
-				var b bytes.Buffer
-				w, err := zlib.NewWriterLevel(&b, zlib.BestCompression)
-				if err != nil {
-					c.ErrLogger.Println("Could not create zlib handler")
+			d.Ack(true)
+			/*
+				if true {
+					d.Ack(true)
+					c.InfLogger.Println("Ack (true)")
+				} else {
 					d.Nack(true, true)
+					c.InfLogger.Println("Nack (true, true)")
 				}
-				c.InfLogger.Println("Compressed message")
-				w.Write(input)
-				w.Close()
+			*/
 
-				input = b.Bytes()
-			}
+			sem <- true
+			go func() {
+				defer func() { <-sem }()
+				input := d.Body
+				c.InfLogger.Println("---------------------------------")
+				c.InfLogger.Println("Receive message:")
+				c.InfLogger.Println(string(input))
+				if c.Compression {
+					var b bytes.Buffer
+					w, err := zlib.NewWriterLevel(&b, zlib.BestCompression)
+					if err != nil {
+						c.ErrLogger.Println("Could not create zlib handler")
+						d.Nack(true, true)
+					}
+					c.InfLogger.Println("Compressed message")
+					w.Write(input)
+					w.Close()
+					input = b.Bytes()
+				}
 
-			cmd := c.Factory.Create(base64.StdEncoding.EncodeToString(input))
-			if c.Executer.Execute(cmd) {
-				d.Ack(true)
-				c.InfLogger.Println("Ack (true)")
-			} else {
-				d.Nack(true, true)
-				c.InfLogger.Println("Nack (true, true)")
-			}
+				c.InfLogger.Println("Process message start")
+				cmd := c.Factory.Create(base64.StdEncoding.EncodeToString(input))
+				c.Executer.Execute(cmd)
+			}()
 		}
 	}()
 	c.InfLogger.Println("Waiting for messages...")
@@ -143,5 +155,6 @@ func New(cfg *config.Config, factory *command.CommandFactory, errLogger, infLogg
 		InfLogger:   infLogger,
 		Executer:    command.New(errLogger, infLogger),
 		Compression: cfg.RabbitMq.Compression,
+		Concurrency: cfg.Concurrency.Max,
 	}, nil
 }

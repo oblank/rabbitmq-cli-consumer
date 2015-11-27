@@ -11,6 +11,9 @@ print_r(date("Y-m-d H:i:s"));
 
 file_put_contents("ret.log", $original."\n", FILE_APPEND);
 echo "\n";
+
+sleep(10);
+
 if (true) {
     print_r($original);
 

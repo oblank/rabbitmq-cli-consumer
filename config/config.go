@@ -29,6 +29,9 @@ type Config struct {
 		Error string
 		Info  string
 	}
+	Concurrency struct {
+		Max int
+	}
 }
 
 func LoadAndParse(location string) (*Config, error) {
