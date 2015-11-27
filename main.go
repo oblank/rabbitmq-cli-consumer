@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"github.com/ricbra/rabbitmq-cli-consumer/command"
 	"github.com/ricbra/rabbitmq-cli-consumer/config"
@@ -8,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func main() {
@@ -56,7 +58,17 @@ func main() {
 			logger.Fatalf("Failed creating info log: %s", err)
 		}
 
-		factory := command.Factory(c.String("executable"))
+		//todo
+		exec_path := c.String("executable")
+		if !filepath.IsAbs(exec_path) {
+			localtion, err := filepath.Abs(exec_path)
+			if err != nil {
+				logger.Fatalf("Failed executable path log: %s", err)
+			}
+			exec_path = localtion
+		}
+		fmt.Println(exec_path)
+		factory := command.Factory(exec_path)
 
 		client, err := consumer.New(cfg, factory, errLogger, infLogger)
 		if err != nil {

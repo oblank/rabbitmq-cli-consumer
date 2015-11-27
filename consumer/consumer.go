@@ -40,6 +40,8 @@ func (c *Consumer) Consume() {
 	go func() {
 		for d := range msgs {
 			input := d.Body
+			c.InfLogger.Println("Receive message:")
+			c.InfLogger.Println(string(input))
 			if c.Compression {
 				var b bytes.Buffer
 				w, err := zlib.NewWriterLevel(&b, zlib.BestCompression)
@@ -57,8 +59,10 @@ func (c *Consumer) Consume() {
 			cmd := c.Factory.Create(base64.StdEncoding.EncodeToString(input))
 			if c.Executer.Execute(cmd) {
 				d.Ack(true)
+				c.InfLogger.Println("Ack (true)")
 			} else {
 				d.Nack(true, true)
+				c.InfLogger.Println("Nack (true, true)")
 			}
 		}
 	}()

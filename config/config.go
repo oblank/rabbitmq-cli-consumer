@@ -1,7 +1,7 @@
 package config
 
 import (
-	"code.google.com/p/gcfg"
+	"gopkg.in/gcfg.v1"
 	"path/filepath"
 )
 
@@ -16,14 +16,14 @@ type Config struct {
 		Compression bool
 	}
 	Prefetch struct {
-		Count     int
-		Global    bool
+		Count  int
+		Global bool
 	}
 	Exchange struct {
-		Name		string
-		Autodelete	bool
-		Type		string
-		Durable		bool
+		Name       string
+		Autodelete bool
+		Type       string
+		Durable    bool
 	}
 	Logs struct {
 		Error string
