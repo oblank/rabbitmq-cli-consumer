@@ -130,16 +130,16 @@ max = 5
 
 When you've created the configuration you can start the consumer like this:
 
-    $ rabbitmq-cli-consumer -e "/path/to/your/app argument --flag" -c /path/to/your/configuration.conf -V
+    $ rabbitmq-cli-consumer -n 3 -e "/path/to/your/app argument --flag" -c /path/to/your/configuration.conf -V
 
 Run without <code>-V</code> to get rid of the output:
 
-    $ rabbitmq-cli-consumer -e "/path/to/your/app argument --flag" -c /path/to/your/configuration.conf
+    $ rabbitmq-cli-consumer -n 3 -e "/path/to/your/app argument --flag" -c /path/to/your/configuration.conf
     
 ### Concurrency 
 
 With the flag <code>--concurrency 5</code> or <code>-n 5</code> you can reset concurrency number(default is 5)
-or add the following section to configuration:
+, or add the following section to configuration:
 
 ```ini
 [concurrency]
@@ -175,7 +175,7 @@ durable=On
 
 Your executable receives the message as the last argument. So consider the following:
 
-   $ rabbitmq-cli-consumer -e "/home/vagrant/current/app/command.php" -c example.conf -V
+   $ rabbitmq-cli-consumer -n 3 -e "/home/vagrant/current/app/command.php" -c example.conf -V
 
 The <code>command.php</code> file should look like this:
 
